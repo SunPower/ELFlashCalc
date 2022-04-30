@@ -282,6 +282,7 @@ namespace ELFlashCalc
             }
 
             var data = lines.ToArray();
+            Console.WriteLine(data[0][0]);
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
