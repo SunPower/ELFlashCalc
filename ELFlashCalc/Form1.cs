@@ -43,6 +43,7 @@ namespace ELFlashCalc
         {
             try
             {
+                string destFile = tb_directory.Text + "/masterFlashData.csv";
                 progressBar1.Value = 0;
                 progressBar1.Maximum = Directory.GetDirectories(tb_directory.Text).Length;
                 progressBar2.Value = 0;
@@ -53,7 +54,7 @@ namespace ELFlashCalc
                 }
                 if (cbFlashData.Checked)
                 {
-                    backgroundWorker2.RunWorkerAsync();
+                    backgroundWorker2.RunWorkerAsync(argument: destFile);
                 }
             }
             catch (Exception ex)
@@ -225,46 +226,72 @@ namespace ELFlashCalc
             }
         }
 
+        
         private void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
         {
             try
             {
-                string destFile = tb_directory.Text + "/masterFlashData.csv";
+                string destFile = (string)e.Argument;
                 StreamWriter fileDest = new StreamWriter(destFile, true);
-                int isHeader = 0; // if 0, read header
+                int isHeader = 0; // if true, read header
 
                 foreach (var path in Directory.GetDirectories(tb_directory.Text)) // Traverse through subfolders in directory
                 {
                     foreach (var file in Directory.GetFiles(path)) // Traverse through subfolders in subfolder directory
                     {
-                        if (file.Contains(".csv") /*|| file.Contains(".xlsx")*/)
+                        if (file.Contains(".csv"))
                         {
                             string[] lines = File.ReadAllLines(file);
+
                             if (isHeader > 0)
                             {
                                 lines = lines.Skip(1).ToArray(); // Skip header for all files except for first
+                                
                             }
 
                             foreach (string line in lines)
                             {
                                 fileDest.WriteLine(line);
                             }
+                            isHeader++;
                         }
-                        isHeader++;
+                        
                     }
                     backgroundWorker2.ReportProgress(0);
                 }
                 fileDest.Close();
+                calcPercentChange(destFile);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
+        private void backgroundWorker3_DoWork(object sender, DoWorkEventArgs e)
+        {
+        }
+        private void calcPercentChange(string destFile)
+        {
+            StreamReader sr = new StreamReader(destFile);
+            var lines = new List<string[]>();
+
+            while (!sr.EndOfStream)
+            {
+                string[] Line = sr.ReadLine().Split(',');
+                lines.Add(Line);
+            }
+
+            var data = lines.ToArray();
+        }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar1.Value += 1;
+        }
+        
+        private void backgroundWorker2_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            progressBar2.Value += 1;
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -272,14 +299,14 @@ namespace ELFlashCalc
             
         }
 
-        private void backgroundWorker2_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            progressBar2.Value += 1;
-        }
-
         private void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             
+        }
+
+        private void lblFlash_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

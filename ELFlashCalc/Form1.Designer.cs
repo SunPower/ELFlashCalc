@@ -40,32 +40,35 @@
             this.label2 = new System.Windows.Forms.Label();
             this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
             this.progressBar2 = new System.Windows.Forms.ProgressBar();
-            this.label3 = new System.Windows.Forms.Label();
+            this.lblFlash = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // tb_directory
             // 
-            this.tb_directory.Location = new System.Drawing.Point(12, 51);
+            this.tb_directory.Location = new System.Drawing.Point(16, 63);
+            this.tb_directory.Margin = new System.Windows.Forms.Padding(4);
             this.tb_directory.Name = "tb_directory";
-            this.tb_directory.Size = new System.Drawing.Size(581, 20);
+            this.tb_directory.Size = new System.Drawing.Size(773, 22);
             this.tb_directory.TabIndex = 1;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(7, 23);
+            this.label1.Location = new System.Drawing.Point(9, 28);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(131, 20);
+            this.label1.Size = new System.Drawing.Size(158, 25);
             this.label1.TabIndex = 2;
             this.label1.Text = "Select a Folder";
             this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // btn_calc
             // 
-            this.btn_calc.Location = new System.Drawing.Point(543, 232);
+            this.btn_calc.Location = new System.Drawing.Point(724, 286);
+            this.btn_calc.Margin = new System.Windows.Forms.Padding(4);
             this.btn_calc.Name = "btn_calc";
-            this.btn_calc.Size = new System.Drawing.Size(92, 30);
+            this.btn_calc.Size = new System.Drawing.Size(123, 37);
             this.btn_calc.TabIndex = 3;
             this.btn_calc.Text = "Calculate";
             this.btn_calc.UseVisualStyleBackColor = true;
@@ -73,9 +76,10 @@
             // 
             // btn_directory
             // 
-            this.btn_directory.Location = new System.Drawing.Point(600, 51);
+            this.btn_directory.Location = new System.Drawing.Point(800, 63);
+            this.btn_directory.Margin = new System.Windows.Forms.Padding(4);
             this.btn_directory.Name = "btn_directory";
-            this.btn_directory.Size = new System.Drawing.Size(35, 20);
+            this.btn_directory.Size = new System.Drawing.Size(47, 25);
             this.btn_directory.TabIndex = 4;
             this.btn_directory.Text = "▪▪▪";
             this.btn_directory.UseVisualStyleBackColor = true;
@@ -83,9 +87,10 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 172);
+            this.progressBar1.Location = new System.Drawing.Point(16, 212);
+            this.progressBar1.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(623, 10);
+            this.progressBar1.Size = new System.Drawing.Size(831, 12);
             this.progressBar1.TabIndex = 5;
             // 
             // backgroundWorker1
@@ -98,9 +103,10 @@
             // lblProgress
             // 
             this.lblProgress.AutoSize = true;
-            this.lblProgress.Location = new System.Drawing.Point(12, 156);
+            this.lblProgress.Location = new System.Drawing.Point(11, 192);
+            this.lblProgress.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(104, 13);
+            this.lblProgress.Size = new System.Drawing.Size(132, 16);
             this.lblProgress.TabIndex = 6;
             this.lblProgress.Text = "Progress: EL Images";
             this.lblProgress.Click += new System.EventHandler(this.lblProgress_Click);
@@ -108,9 +114,10 @@
             // cbELImages
             // 
             this.cbELImages.AutoSize = true;
-            this.cbELImages.Location = new System.Drawing.Point(12, 99);
+            this.cbELImages.Location = new System.Drawing.Point(16, 122);
+            this.cbELImages.Margin = new System.Windows.Forms.Padding(4);
             this.cbELImages.Name = "cbELImages";
-            this.cbELImages.Size = new System.Drawing.Size(76, 17);
+            this.cbELImages.Size = new System.Drawing.Size(93, 20);
             this.cbELImages.TabIndex = 7;
             this.cbELImages.Text = "EL Images";
             this.cbELImages.UseVisualStyleBackColor = true;
@@ -118,9 +125,10 @@
             // cbFlashData
             // 
             this.cbFlashData.AutoSize = true;
-            this.cbFlashData.Location = new System.Drawing.Point(12, 122);
+            this.cbFlashData.Location = new System.Drawing.Point(16, 150);
+            this.cbFlashData.Margin = new System.Windows.Forms.Padding(4);
             this.cbFlashData.Name = "cbFlashData";
-            this.cbFlashData.Size = new System.Drawing.Size(77, 17);
+            this.cbFlashData.Size = new System.Drawing.Size(94, 20);
             this.cbFlashData.TabIndex = 8;
             this.cbFlashData.Text = "Flash Data";
             this.cbFlashData.UseVisualStyleBackColor = true;
@@ -129,9 +137,10 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(12, 80);
+            this.label2.Location = new System.Drawing.Point(16, 98);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(219, 16);
+            this.label2.Size = new System.Drawing.Size(268, 20);
             this.label2.TabIndex = 9;
             this.label2.Text = "Please Select Data to Process";
             // 
@@ -144,26 +153,29 @@
             // 
             // progressBar2
             // 
-            this.progressBar2.Location = new System.Drawing.Point(11, 216);
+            this.progressBar2.Location = new System.Drawing.Point(15, 266);
+            this.progressBar2.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(623, 10);
+            this.progressBar2.Size = new System.Drawing.Size(831, 12);
             this.progressBar2.TabIndex = 10;
             // 
-            // label3
+            // lblFlash
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 200);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(105, 13);
-            this.label3.TabIndex = 11;
-            this.label3.Text = "Progress: Flash Data";
+            this.lblFlash.AutoSize = true;
+            this.lblFlash.Location = new System.Drawing.Point(11, 246);
+            this.lblFlash.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblFlash.Name = "lblFlash";
+            this.lblFlash.Size = new System.Drawing.Size(267, 16);
+            this.lblFlash.TabIndex = 11;
+            this.lblFlash.Text = "Progress: Calculating Flash Data % Change";
+            this.lblFlash.Click += new System.EventHandler(this.lblFlash_Click);
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(647, 274);
-            this.Controls.Add(this.label3);
+            this.ClientSize = new System.Drawing.Size(863, 337);
+            this.Controls.Add(this.lblFlash);
             this.Controls.Add(this.progressBar2);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.cbFlashData);
@@ -175,6 +187,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tb_directory);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Form1";
@@ -199,7 +212,7 @@
         private System.Windows.Forms.Label label2;
         private System.ComponentModel.BackgroundWorker backgroundWorker2;
         private System.Windows.Forms.ProgressBar progressBar2;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lblFlash;
     }
 }
 
