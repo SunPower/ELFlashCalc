@@ -164,7 +164,8 @@ namespace ELFlashCalc
                                 if (ELImg.Contains(".jpg")) // if jpg img, insert into slide with name
                                 {
                                     // TODO: Crop ELImg using square detection and append new image to text frame
-                                    /*img = new Image<Bgr, byte>(ELImg);
+                                    /*
+                                    img = new Image<Bgr, byte>(ELImg);
                                     var temp = img.SmoothGaussian(5).Convert<Gray,byte>().ThresholdBinary(new Gray(230),new Gray(255)); // Any pixel 230+ is set to 255
                                     VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
                                     Mat m = new Mat();
@@ -179,7 +180,8 @@ namespace ELFlashCalc
                                     CvInvoke.DrawContours(img, contours, 0, new MCvScalar(0, 0, 255));
                                     var moments = CvInvoke.Moments(contours[0]);
                                     int x = (int)(moments.M10 / moments.M00);
-                                    int y = (int)(moments.M01 / moments.M00);*/
+                                    int y = (int)(moments.M01 / moments.M00);
+                                    */
 
                                     RectangleF rect = new RectangleF(col, row, 64, 51);
                                     presentation.Slides[slide_no].Shapes.AppendEmbedImage(ShapeType.Rectangle, ELImg, rect);
@@ -229,6 +231,7 @@ namespace ELFlashCalc
         
         private void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
         {
+            // Append all flash data to a master flash data file
             try
             {
                 string destFile = (string)e.Argument;
@@ -272,6 +275,16 @@ namespace ELFlashCalc
         }
         private void calcPercentChange(string destFile)
         {
+            // Initialize variables
+            int serialNoCol = 3;
+            int midreadNoCol = 2;
+            int[] rawFlashDataCols = {5, 6, 7, 8, 9, 10, 11, 12, 13};
+            int calCount = 0;
+            IDictionary<string, string[]> initValsForModule = new Dictionary<string, string[]>();
+            IDictionary<string, string[]> initCalValsForModule = new Dictionary<string, string[]>();
+
+            //
+            StreamWriter fileDest = new StreamWriter(tb_directory.Text + "/PercentChangeMasterFlashData.csv", true);
             StreamReader sr = new StreamReader(destFile);
             var lines = new List<string[]>();
 
@@ -282,7 +295,93 @@ namespace ELFlashCalc
             }
 
             var data = lines.ToArray();
-            Console.WriteLine(data[0][0]);
+            
+            // Grab initial data
+            foreach (var d in data)
+            {
+                if (d[0] == "ID")
+                {
+                    Console.WriteLine("Skipping headers");
+                    continue;
+                }
+                
+                if (d[midreadNoCol].Substring(0,2)== "01" && !d[midreadNoCol].Contains("Cal"))
+                {
+                    string serialNo = d[serialNoCol].Substring(0, 3);
+                    string[] rawFlashData = new string[rawFlashDataCols.Length];
+                    int k = 0;
+                    foreach (int j in rawFlashDataCols)
+                    {
+                        rawFlashData[k] = d[j];
+                        k++;
+                    }
+                    initValsForModule[serialNo] = rawFlashData;
+                }
+
+                if (calCount < 3 && d[midreadNoCol].Contains("Cal"))
+                {
+                    string serialNo = d[serialNoCol];
+                    string[] rawCalFlashData = new string[rawFlashDataCols.Length];
+                    int k = 0;
+                    foreach (int j in rawFlashDataCols)
+                    {
+                        rawCalFlashData[k] = d[j];
+                        k++;
+                    }
+                    initCalValsForModule[serialNo] = rawCalFlashData;
+                    calCount++;
+                }
+            }
+            // Perform calculations
+            int i = 0;
+            foreach (var d in data)
+            {
+                if (d[0] == "ID")
+                {
+                    // Create percent change columns
+                    foreach (int col in rawFlashDataCols)
+                    {
+                        lines[0] = new List<string>(lines[0]) { "%Change_" + lines[0][col] }.ToArray();
+                    }
+                    i++;
+                    continue;
+                }
+                foreach (int col in rawFlashDataCols)
+                {
+                    float percentChange = 0;
+                    try
+                    {
+                        float initValFloat = 0;
+                        // percent change = (current - initial) / initial
+                        if (!d[midreadNoCol].Contains("Cal"))
+                        {
+                            string initVal = initValsForModule[d[serialNoCol].Substring(0, 3)][col - 5];
+                            initValFloat = float.Parse(initVal);
+                        }
+                        if (d[midreadNoCol].Contains("Cal"))
+                        {
+                            string initCalVal = initCalValsForModule[d[serialNoCol]][col - 5];
+                            initValFloat = float.Parse(initCalVal);
+                        }
+                    
+                        float currValFloat = float.Parse(d[col]);
+                        percentChange = (currValFloat - initValFloat) / initValFloat;
+                    }
+                    catch
+                    {
+                        
+                    }
+                    
+                    lines[i] = new List<string>(lines[i]) { percentChange.ToString() }.ToArray();
+                }
+                i++;
+            }
+            data = lines.ToArray();
+            foreach (var line in data)
+            {
+                fileDest.WriteLine(string.Join(",",line));
+            }
+            fileDest.Close();
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
