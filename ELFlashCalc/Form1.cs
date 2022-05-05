@@ -165,6 +165,7 @@ namespace ELFlashCalc
                                 {
                                     // TODO: Crop ELImg using square detection and append new image to text frame
                                     /*
+                                    
                                     img = new Image<Bgr, byte>(ELImg);
                                     var temp = img.SmoothGaussian(5).Convert<Gray,byte>().ThresholdBinary(new Gray(230),new Gray(255)); // Any pixel 230+ is set to 255
                                     VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
