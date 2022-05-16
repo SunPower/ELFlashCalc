@@ -20,7 +20,6 @@ namespace ELFlashCalc
 {
     public partial class Form1 : Form
     {
-        Image<Bgr, byte> img;
         public Form1()
         {
             InitializeComponent();
@@ -44,13 +43,14 @@ namespace ELFlashCalc
             try
             {
                 string destFile = tb_directory.Text + "/masterFlashData.csv";
+                string cropFolder = System.IO.Path.Combine(tb_directory.Text, "Cropped");
                 progressBar1.Value = 0;
-                progressBar1.Maximum = Directory.GetDirectories(tb_directory.Text).Length;
+                progressBar1.Maximum = Directory.GetDirectories(tb_directory.Text).Length + 1;
                 progressBar2.Value = 0;
                 progressBar2.Maximum = Directory.GetDirectories(tb_directory.Text).Length;
                 if (cbELImages.Checked)
                 {
-                    backgroundWorker1.RunWorkerAsync();
+                    backgroundWorker1.RunWorkerAsync(argument: cropFolder);
                 }
                 if (cbFlashData.Checked)
                 {
@@ -83,6 +83,7 @@ namespace ELFlashCalc
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
+            string cropFolder = (string)e.Argument;
             try
             {
                 Presentation presentation = new Presentation();
@@ -103,11 +104,35 @@ namespace ELFlashCalc
                 textRange.Fill.FillType = Spire.Presentation.Drawing.FillFormatType.Solid;
                 //set the Font of text in shape
                 textRange.FontHeight = 21;
+                string descriptionFile = "";
+                foreach (var file in Directory.GetFiles(tb_directory.Text))
+                {
+                    if (System.IO.Path.GetFileName(file).Contains(".csv"))
+                    {
+                        descriptionFile = file;
+                    }
+                }
+                StreamReader sr = new StreamReader(descriptionFile);
+                var dLines = new List<string[]>();
 
+                while (!sr.EndOfStream)
+                {
+                    string[] Line = sr.ReadLine().Split(',');
+                    dLines.Add(Line);
+                }
+
+                var dData = dLines.ToArray();
+                sr.Close();
+
+                foreach (var d in dData)
+                {
+                    Console.WriteLine(d[3].ToString());
+                }
 
                 int col = 85;
                 bool isFirstFolder = true;
 
+                System.IO.Directory.CreateDirectory(cropFolder);
 
                 foreach (var path in Directory.GetDirectories(tb_directory.Text)) // Traverse through subfolders in directory
                 {
@@ -119,6 +144,7 @@ namespace ELFlashCalc
                         if (folder.Contains("EL"))
                         {
                             int slide_no = 1;
+                            int desciptionIndex = 1;
                             foreach (var ELImg in Directory.GetFiles(sub)) // Traverse through imgs in EL image folder
                             {
                                 if (isFirstFolder && row == 60) // append new slide if inserting image into first row
@@ -133,7 +159,8 @@ namespace ELFlashCalc
                                     //set the color and fill style
                                     shapeMidread.Fill.FillType = Spire.Presentation.Drawing.FillFormatType.Solid;
                                     shapeMidread.Fill.SolidColor.Color = Color.BlanchedAlmond;
-                                    shapeMidread.AppendTextFrame(System.IO.Path.GetFileName("insert midread"));
+                                    shapeMidread.AppendTextFrame(System.IO.Path.GetFileName(dData[desciptionIndex][3]));
+                                    desciptionIndex++;
                                     shapeMidread.TextFrame.Paragraphs[0].Alignment = TextAlignmentType.Center;
                                     shapeMidread.ShapeStyle.LineColor.Color = Color.Empty;
 
@@ -161,35 +188,73 @@ namespace ELFlashCalc
                                     //set the Font of text in shape
                                     textRangeFolder.FontHeight = 6;
                                 }
-                                if (ELImg.Contains(".jpg")) // if jpg img, insert into slide with name
+                                if (ELImg.Contains(".jpg") || ELImg.Contains(".png")) // if jpg img, insert into slide with name
                                 {
                                     // TODO: Crop ELImg using square detection and append new image to text frame
-                                    /*
-                                    
-                                    img = new Image<Bgr, byte>(ELImg);
-                                    var temp = img.SmoothGaussian(5).Convert<Gray,byte>().ThresholdBinary(new Gray(230),new Gray(255)); // Any pixel 230+ is set to 255
-                                    VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                                    Mat m = new Mat();
+                                    Image<Bgr, byte> imgInput;
+                                    Image<Gray, byte> CC;
 
-                                    CvInvoke.FindContours(temp,contours,m,Emgu.CV.CvEnum.RetrType.External,Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
-                                    
-                                    
-                                    double perimeter = CvInvoke.ArcLength(contours[0], true);
-                                    VectorOfPoint approx = new VectorOfPoint();
-                                    CvInvoke.ApproxPolyDP(contours[0], approx, 0.04 * perimeter, true);
+                                    imgInput = new Image<Bgr, byte>(ELImg);
+                                    byte[] bytesX = imgInput.ToJpegData();
+                                    Image x = (Bitmap)((new ImageConverter()).ConvertFrom(bytesX));
+                                    int width=91;
+                                    int height=73;
+                                    try
+                                    {
+                                        var temp = imgInput.Convert<Gray, byte>().ThresholdBinary(new Gray(20), new Gray(255))
+                                            .Dilate(2).Erode(1);
+                                        Mat labels = new Mat();
+                                        int nLabels = CvInvoke.ConnectedComponents(temp, labels);
+                                        CC = labels.ToImage<Gray, byte>();
+                                        byte[] bytesY = temp.ToJpegData();
+                                        Image y = (Bitmap)((new ImageConverter()).ConvertFrom(bytesY));
 
-                                    CvInvoke.DrawContours(img, contours, 0, new MCvScalar(0, 0, 255));
-                                    var moments = CvInvoke.Moments(contours[0]);
-                                    int x = (int)(moments.M10 / moments.M00);
-                                    int y = (int)(moments.M01 / moments.M00);
-                                    */
+                                        int label = (int)CC[256, 320].Intensity;
+                                        if (label != 0)
+                                        {
+                                            var tempC = CC.InRange(new Gray(label), new Gray(label));
+                                            VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+                                            Mat m = new Mat();
 
-                                    RectangleF rect = new RectangleF(col, row, 64, 51);
-                                    presentation.Slides[slide_no].Shapes.AppendEmbedImage(ShapeType.Rectangle, ELImg, rect);
+                                            CvInvoke.FindContours(tempC, contours, m, Emgu.CV.CvEnum.RetrType.External,
+                                                Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+
+                                            if (contours.Size > 0)
+                                            {
+                                                Rectangle bbox = CvInvoke.BoundingRectangle(contours[0]);
+
+                                                imgInput.ROI = bbox;
+                                                var img = imgInput.Copy();
+
+                                                imgInput.ROI = Rectangle.Empty;
+
+                                                byte[] bytes = img.ToJpegData();
+                                                Image z = (Bitmap)((new ImageConverter()).ConvertFrom(bytes));
+                                                z.Save(cropFolder + "/" + System.IO.Path.GetFileName(ELImg));
+                                                width = z.Width/7;
+                                                height = z.Height/7;
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show(ex.Message);
+                                    }
+                                    
+                                    RectangleF rect = new RectangleF(col, row, width, height);
+                                    try
+                                    {
+                                        presentation.Slides[slide_no].Shapes.AppendEmbedImage(ShapeType.Rectangle, cropFolder + "/" + System.IO.Path.GetFileName(ELImg), rect);
+                                    }
+                                    catch
+                                    {  
+                                        presentation.Slides[slide_no].Shapes.AppendEmbedImage(ShapeType.Rectangle, ELImg, rect);
+                                    }
+                                       
                                     presentation.Slides[slide_no].Shapes[0].Line.FillFormat.SolidFillColor.Color = Color.FloralWhite;
 
                                     IAutoShape shapeImgTitle = presentation.Slides[slide_no].Shapes.AppendShape(ShapeType.Rectangle,
-                                    new RectangleF(col, row + 53, 64, 17));
+                                    new RectangleF(col, row + 73, 91, 17));
                                     //set the color and fill style
                                     shapeImgTitle.Fill.FillType = Spire.Presentation.Drawing.FillFormatType.Solid;
                                     shapeImgTitle.Fill.SolidColor.Color = Color.Beige;
@@ -201,17 +266,17 @@ namespace ELFlashCalc
                                     TextRange textRangeImg = shapeImgTitle.TextFrame.TextRange;
                                     textRangeImg.Fill.FillType = Spire.Presentation.Drawing.FillFormatType.Solid;
                                     //set the Font of text in shape
-                                    textRangeImg.FontHeight = 4;
+                                    textRangeImg.FontHeight = 6;
 
-                                    row += 75;
-                                }
-                                if (row >= 360)
+                                    row += 100;
+                                    }
+                                if (row >= 460)
                                 {
                                     row = 60;
                                     slide_no++;
                                 }
                             }
-                            col += 75;
+                            col += 100;
                             isFirstFolder = false;
 
 
@@ -302,7 +367,6 @@ namespace ELFlashCalc
             {
                 if (d[0] == "ID")
                 {
-                    Console.WriteLine("Skipping headers");
                     continue;
                 }
                 
