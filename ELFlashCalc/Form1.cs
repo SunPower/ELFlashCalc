@@ -291,7 +291,7 @@ namespace ELFlashCalc
             {
                 string destFile = (string)e.Argument;
                 StreamWriter fileDest = new StreamWriter(destFile, true);
-                int isHeader = 0; // if true, read header
+                int isHeader = 0; // If true, read header
 
                 foreach (var path in Directory.GetDirectories(tb_directory.Text)) // Traverse through subfolders in directory
                 {
