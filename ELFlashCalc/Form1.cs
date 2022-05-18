@@ -42,48 +42,42 @@ namespace ELFlashCalc
         {
             try
             {
-                string destFile = tb_directory.Text + "/masterFlashData.csv";
-                string cropFolder = System.IO.Path.Combine(tb_directory.Text, "Cropped");
-                progressBar1.Value = 0;
-                progressBar1.Maximum = Directory.GetDirectories(tb_directory.Text).Length + 1;
-                progressBar2.Value = 0;
-                progressBar2.Maximum = Directory.GetDirectories(tb_directory.Text).Length;
+                string destFile = tb_directory.Text + "/masterFlashData.csv"; // Path to master csv file
+                string cropFolder = System.IO.Path.Combine(tb_directory.Text, "Cropped"); // Create a new folder for Cropped imgs
+                progressBar1.Value = 0; // Progress of EL image processing
+                progressBar1.Maximum = Directory.GetDirectories(tb_directory.Text).Length + 1; // Set max to size of folders. The "+1" is for the new "Cropped" folder
+                progressBar2.Value = 0; // Progress of Flash Calculations
+                progressBar2.Maximum = Directory.GetDirectories(tb_directory.Text).Length; // Set max to number of folders
                 if (cbELImages.Checked)
                 {
-                    backgroundWorker1.RunWorkerAsync(argument: cropFolder);
+                    backgroundWorker1.RunWorkerAsync(argument: cropFolder); // Start a worker to process imgs
                 }
                 if (cbFlashData.Checked)
                 {
-                    backgroundWorker2.RunWorkerAsync(argument: destFile);
+                    backgroundWorker2.RunWorkerAsync(argument: destFile); // Start a worker for Flash calculations
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-
-            /*foreach (var path in Directory.GetFiles(tb_directory.Text)) 
-            {
-                Console.WriteLine(path); // full path
-                Console.WriteLine(System.IO.Path.GetFileName(path)); // file name
-            }*/
         }
 
         private void btn_directory_Click(object sender, EventArgs e)
         {
-            progressBar1.Value = 0; 
+            progressBar1.Value = 0; // Reset progress if selecting a new folder
             progressBar2.Value = 0;
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
+            dialog.IsFolderPicker = true; // set to true if a folder was selected
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                tb_directory.Text = dialog.FileName;
+                tb_directory.Text = dialog.FileName; // Grab text from selected path 
             }
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-            string cropFolder = (string)e.Argument;
+            string cropFolder = (string)e.Argument; // declare/initialize path to "Cropped" folder
             try
             {
                 Presentation presentation = new Presentation();
@@ -105,6 +99,7 @@ namespace ELFlashCalc
                 //set the Font of text in shape
                 textRange.FontHeight = 21;
                 string descriptionFile = "";
+                // Look for path to description file and store it in a variable
                 foreach (var file in Directory.GetFiles(tb_directory.Text))
                 {
                     if (System.IO.Path.GetFileName(file).Contains(".csv"))
@@ -113,53 +108,48 @@ namespace ELFlashCalc
                     }
                 }
                 StreamReader sr = new StreamReader(descriptionFile);
-                var dLines = new List<string[]>();
-
+                var dLines = new List<string[]>(); // Declare a new list to store data in descriptionFile
+                //Read each line and store it into dLines
                 while (!sr.EndOfStream)
                 {
-                    string[] Line = sr.ReadLine().Split(',');
+                    string[] Line = sr.ReadLine().Split(','); // Read each piece of data separated by a comma
                     dLines.Add(Line);
                 }
 
-                var dData = dLines.ToArray();
+                var dData = dLines.ToArray(); // Convert to an array for easy access
                 sr.Close();
 
-                foreach (var d in dData)
-                {
-                    Console.WriteLine(d[3].ToString());
-                }
-
-                int col = 85;
+                int row = 60; // Row of img (60 is first row)
                 bool isFirstFolder = true;
 
-                System.IO.Directory.CreateDirectory(cropFolder);
+                System.IO.Directory.CreateDirectory(cropFolder); // Create new folder
 
                 foreach (var path in Directory.GetDirectories(tb_directory.Text)) // Traverse through subfolders in directory
                 {
                     foreach (var sub in Directory.GetDirectories(path)) // Traverse through subfolders in subfolder directory
                     {
-                        int row = 60; // Row of img (60 is first row)
+                        int col = 85;
                         string folder = System.IO.Path.GetFileName(sub);
 
-                        if (folder.Contains("EL"))
+                        if (folder.Contains("EL")) // if EL folder, process images in this folder
                         {
-                            int slide_no = 1;
-                            int desciptionIndex = 1;
+                            int slide_no = 1; // slide number currently working on
+                            int desciptionIndex = 1; // Row or index of sample data. (New name)
                             foreach (var ELImg in Directory.GetFiles(sub)) // Traverse through imgs in EL image folder
                             {
-                                if (isFirstFolder && row == 60) // append new slide if inserting image into first row
+                                if (isFirstFolder && col == 85) // append new slide if inserting image into first row
                                 {
                                     presentation.Slides.Append();
                                 }
                                 if (isFirstFolder)
                                 {
-                                    // Insert midread on the left
+                                    // Insert midread on the top
                                     IAutoShape shapeMidread = presentation.Slides[slide_no].Shapes.AppendShape(ShapeType.Rectangle,
-                                    new RectangleF(10, row + 15, 64, 25));
+                                    new RectangleF(col, 20, 90, 25));
                                     //set the color and fill style
                                     shapeMidread.Fill.FillType = Spire.Presentation.Drawing.FillFormatType.Solid;
                                     shapeMidread.Fill.SolidColor.Color = Color.BlanchedAlmond;
-                                    shapeMidread.AppendTextFrame(System.IO.Path.GetFileName(dData[desciptionIndex][3]));
+                                    shapeMidread.AppendTextFrame(System.IO.Path.GetFileName(dData[desciptionIndex][3])); // Insert new name into shape
                                     desciptionIndex++;
                                     shapeMidread.TextFrame.Paragraphs[0].Alignment = TextAlignmentType.Center;
                                     shapeMidread.ShapeStyle.LineColor.Color = Color.Empty;
@@ -171,10 +161,10 @@ namespace ELFlashCalc
                                     //set the Font of text in shape
                                     textRangeMidread.FontHeight = 6;
                                 }
-                                if (row == 60) // insert name of folder as title
+                                if (col == 85) // insert name of folder as title on the left
                                 {
                                     IAutoShape shapeFolder = presentation.Slides[slide_no].Shapes.AppendShape(ShapeType.Rectangle,
-                                    new RectangleF(col, 20, 64, 25));
+                                    new RectangleF(10, row, 64, 25));
                                     //set the color and fill style
                                     shapeFolder.Fill.FillType = Spire.Presentation.Drawing.FillFormatType.Solid;
                                     shapeFolder.Fill.SolidColor.Color = Color.LightGray;
@@ -188,7 +178,7 @@ namespace ELFlashCalc
                                     //set the Font of text in shape
                                     textRangeFolder.FontHeight = 6;
                                 }
-                                if (ELImg.Contains(".jpg") || ELImg.Contains(".png")) // if jpg img, insert into slide with name
+                                if (ELImg.Contains(".jpg") || ELImg.Contains(".png")) // if jpg/png img, insert into slide with name
                                 {
                                     // TODO: Crop ELImg using square detection and append new image to text frame
                                     Image<Bgr, byte> imgInput;
@@ -254,7 +244,7 @@ namespace ELFlashCalc
                                     presentation.Slides[slide_no].Shapes[0].Line.FillFormat.SolidFillColor.Color = Color.FloralWhite;
 
                                     IAutoShape shapeImgTitle = presentation.Slides[slide_no].Shapes.AppendShape(ShapeType.Rectangle,
-                                    new RectangleF(col, row + 73, 91, 17));
+                                    new RectangleF(col, row + 70, 91, 17));
                                     //set the color and fill style
                                     shapeImgTitle.Fill.FillType = Spire.Presentation.Drawing.FillFormatType.Solid;
                                     shapeImgTitle.Fill.SolidColor.Color = Color.Beige;
@@ -268,18 +258,17 @@ namespace ELFlashCalc
                                     //set the Font of text in shape
                                     textRangeImg.FontHeight = 6;
 
-                                    row += 100;
-                                    }
-                                if (row >= 460)
+                                    col += 100;
+                                }
+                                if (col >= 585)
                                 {
-                                    row = 60;
+                                    col = 85;
                                     slide_no++;
                                 }
                             }
-                            col += 100;
+                            row += 90;
+                            
                             isFirstFolder = false;
-
-
                         }
                     }
                     backgroundWorker1.ReportProgress(0);
